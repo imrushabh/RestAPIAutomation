@@ -1,0 +1,32 @@
+version: 2.0
+
+jobs:
+  test:
+    docker:
+      - image: circleci/openjdk:stretch
+    steps:
+      - checkout
+      - run: ./mvnw test
+
+  build:
+    docker:
+      - image: circleci/openjdk:stretch
+    steps:
+      - checkout
+      - run: ./mvnw -Dmaven.test.skip=true package
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+      - deploy
+  nightly:
+    triggers: #use the triggers key to indicate a scheduled build
+      - schedule:
+          cron: "0 * * * *" # use cron syntax to set the schedule
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - coverage

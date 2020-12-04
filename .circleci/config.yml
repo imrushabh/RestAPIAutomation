@@ -20,6 +20,7 @@ jobs:
     - image: circleci/openjdk:stretch
     steps: 
       - checkout
+      -run: maven clean install
   test:
     working-directory: ~/RestApiAutomation
     docker:

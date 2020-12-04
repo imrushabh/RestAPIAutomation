@@ -1,19 +1,39 @@
+# -------- WARNING ---------
+# Your config does not conform to the schema.
+# Violations are listed below:
+# 
+# ERROR IN CONFIG FILE:
+# [#/jobs] 4 schema violations found
+# Jobs is a map
+# 1. [#/jobs/build] only 1 subschema matches out of 2
+# |   1. [#/jobs/build] required key [steps] not found
+# 2. [#/jobs/test] only 1 subschema matches out of 2
+# |   1. [#/jobs/test] 0 subschemas matched instead of one
+# |   |   1. [#/jobs/test] required key [docker] not found
+# |   |   2. [#/jobs/test] required key [machine] not found
+# |   |   3. [#/jobs/test] required key [macos] not found
 version: 2
 jobs:
   build:
     working-directory: ~/RestApiAutomation
     docker:
-      - image: circleci/openjdk:stretch
-  
+    - image: circleci/openjdk:stretch
+    steps: 
+      - checkout
+      - run: mvn install
   test:
     working-directory: ~/RestApiAutomation
+    docker:
+    - image: circleci/openjdk:stretch
     steps:
+      - checkout
       - run: ./mvn -Dmaven.test.skip=true package
-workflow:
+
+workflows:
   version: 2
   build-and-test:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+    - build
+    - test:
+        requires:
+        - build

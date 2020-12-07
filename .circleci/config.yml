@@ -1,39 +1,42 @@
-# -------- WARNING ---------
-# Your config does not conform to the schema.
-# Violations are listed below:
-# 
-# ERROR IN CONFIG FILE:
-# [#/jobs] 4 schema violations found
-# Jobs is a map
-# 1. [#/jobs/build] only 1 subschema matches out of 2
-# |   1. [#/jobs/build] required key [steps] not found
-# 2. [#/jobs/test] only 1 subschema matches out of 2
-# |   1. [#/jobs/test] 0 subschemas matched instead of one
-# |   |   1. [#/jobs/test] required key [docker] not found
-# |   |   2. [#/jobs/test] required key [machine] not found
-# |   |   3. [#/jobs/test] required key [macos] not found
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
 version: 2
 jobs:
   build:
-    working-directory: ~/RestApiAutomation
     docker:
-    - image: circleci/openjdk:stretch
-    steps: 
-      - checkout
-      - run: mvn install
-  test:
-    working-directory: ~/RestApiAutomation
-    docker:
-    - image: circleci/openjdk:stretch
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
     steps:
       - checkout
-      - run: ./mvn -Dmaven.test.skip=true package
 
-workflows:
-  version: 2
-  build-and-test:
-    jobs:
-    - build
-    - test:
-        requires:
-        - build
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: gradle dependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      # run tests!
+      - run: gradle test
